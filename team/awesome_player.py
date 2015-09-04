@@ -6,11 +6,11 @@
 from pelita.player import AbstractPlayer
 
 
-class AwesomePalyer(AbstractPlayer):
+class AwesomePlayer(AbstractPlayer):
     '''
     Player which makes awesome move decisions.
     '''
-    def __init__(self, walkie_talkie):
+    def __init__(self, walkie_talkie=None):
         '''
         '''
         self.wt = walkie_talkie
@@ -21,14 +21,18 @@ class AwesomePalyer(AbstractPlayer):
     def get_role(self):
         '''Returns the role of the player.
         '''
-        pass
+        if self.wk is None:
+            pass
+        else:
+            pass
 
 
     def get_move(self):
         '''Returns the next move to be made by the player.
         '''
         role = self.get_role()
-        if role is 'attacke':
+
+        if role is 'attack':
             self.attacker.get_move()
 
         elif role is 'defend':
