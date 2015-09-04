@@ -4,7 +4,7 @@
 from pelita.player import SimpleTeam
 from .demo_player import DrunkPlayer
 from .dirk_player import DirkPlayer
-from .FoodEatingPlayer import FoodEatingPlayer
+from .ExtremelyHungryPlayer import ExtremelyHungryPlayer
 # (please use relative imports inside your module)
 
 # The default factory method, which this module must export.
@@ -13,7 +13,7 @@ from .FoodEatingPlayer import FoodEatingPlayer
 # the first and second player.
 
 def factory():
-    return SimpleTeam("scarystash", FoodEatingPlayer(), DirkPlayer())
+    return SimpleTeam("scarystash", ExtremelyHungryPlayer(), DirkPlayer())
 
 # For testing purposes, one may use alternate factory methods::
 #

@@ -7,7 +7,7 @@ from pelita.player import AbstractPlayer, SimpleTeam
 import numpy as np
 
 
-class FoodEatingPlayer(AbstractPlayer):
+class ExtremelyHungryPlayer(AbstractPlayer):
     def set_initial(self):
         self.adjacency = AdjacencyList(self.current_uni.reachable([self.initial_pos]))
         self.next_food = None
