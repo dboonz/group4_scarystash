@@ -16,17 +16,20 @@ class CollectiveMemory():
         if bot2 is not None:
             bot2.set_memory(self)
 
-    def get_bot1(self):
+    @property
+    def bot1(self):
         return self._bot1
 
-    def set_bot1(self, value):
+    @bot1.setter
+    def bot1(self, value):
         self._bot1 = value
-
-    def get_bot2(self):
+        
+    @property
+    def bot2(self):
         return self._bot2
 
-
-    def set_bot2(self, value):
+    @bot2.setter
+    def bot2(self, value):
         self._bot2 = value
 
     def store(self, key, value):
