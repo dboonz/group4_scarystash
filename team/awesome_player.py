@@ -10,12 +10,12 @@ class AwesomePlayer(AbstractPlayer):
     '''
     Player which makes awesome move decisions.
     '''
-    def __init__(self, walkie_talkie=None):
+    def __init__(self, attacker, defender, walkie_talkie=None, ):
         '''
         '''
         self.memory = walkie_talkie
-        self.attacker = Attacker()
-        self.defender = Defender()
+        self.attacker = attacker
+        self.defender = defender
 
 
     def get_role(self):
