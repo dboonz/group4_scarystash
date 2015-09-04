@@ -3,8 +3,9 @@
 
 from pelita.player import SimpleTeam
 from .demo_player import DrunkPlayer
-from .dirk_player import DirkPlayer
-from .ExtremelyHungryPlayer import ExtremelyHungryPlayer
+from .memoryPlayer import MemoryPlayer
+from .utils.helper import CollectiveMemory
+
 # (please use relative imports inside your module)
 
 # The default factory method, which this module must export.
@@ -13,7 +14,11 @@ from .ExtremelyHungryPlayer import ExtremelyHungryPlayer
 # the first and second player.
 
 def factory():
-    return SimpleTeam("scarystash", ExtremelyHungryPlayer(), DirkPlayer())
+    bot1 = MemoryPlayer(is_sender=True)
+    bot2 = MemoryPlayer(is_sender=False)
+    print('Creating bots {b1} and {b2}'.format(b1 = bot1.__repr__, b2 = bot2.__repr__))
+    m = CollectiveMemory(bot1, bot2)
+    return SimpleTeam("group4", bot1, bot2)
 
 # For testing purposes, one may use alternate factory methods::
 #
@@ -23,4 +28,3 @@ def factory():
 # To be used as follows::
 #
 #     $ ./pelitagame path_to/groupN/:alternate_factory
-
