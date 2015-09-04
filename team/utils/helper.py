@@ -10,10 +10,11 @@ class CollectiveMemory():
     def __init__(self,bot1=None, bot2=None):
         self._bot1 = bot1
         self._bot2 = bot2
-        print('Starting memory with {b1} and {b2}'.format(b1 = bot1.__repr__, b2 = bot2.__repr__))
-        self.brain = {'step': 1}
-        bot1.set_memory(self)
-        bot2.set_memory(self)
+        self.brain = {}
+        if bot1 is not None:
+            bot1.set_memory(self)
+        if bot2 is not None:
+            bot2.set_memory(self)
 
     def get_bot1(self):
         return self._bot1
