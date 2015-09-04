@@ -13,15 +13,15 @@ class AwesomePlayer(AbstractPlayer):
     def __init__(self, walkie_talkie=None):
         '''
         '''
-        self.wt = walkie_talkie
-        # self.attacker = Attacker()
-        # self.defender = Defender()
+        self.memory = walkie_talkie
+        self.attacker = Attacker()
+        self.defender = Defender()
 
 
     def get_role(self):
         '''Returns the role of the player.
         '''
-        if self.wk is None:
+        if self.memory is None:
             pass
         else:
             pass
