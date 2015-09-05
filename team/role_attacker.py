@@ -28,10 +28,14 @@ class ExtremelyHungryRole():
 
     def detect_loop(self):
         """ Detects if we have a loop, and writes out that we're in a loop """
-        if len(set(self.past_moves[-3:-1])) < 3:
-            self.loop_counter += 1
+        if len(set(self.past_moves[-20:-1])) < 10:
+            if len(self.past_moves) > 18:
+                self.loop_counter += 1
         else:
             self.loop_counter = 0
+
+#        if self.player.me.index == 1:
+#            import pdb; pdb.set_trace()
         return True
 
     def compute_food_score(self, distance_decay=2.5):
@@ -55,19 +59,35 @@ class ExtremelyHungryRole():
             self.step_options[first_step]+=weight
 
             i += 1
-            if self.loop_counter > 0:
-                print("Stuck in a loop for %d steps" % self.loop_counter)
+        if self.loop_counter > 3:
+            #print("Stuck in a loop for %d steps" % self.loop_counter)
+            distances_idx = np.argsort(distances)
+            for i in range(min(int((self.loop_counter - 10)/3), len(distances_idx))):
+                path_to_pill = \
+                    self.player.adjacency.a_star(self.player.current_pos,
+                    self.player.enemy_food[distances_idx[i]])
+                first_step = diff_pos(self.player.current_pos, path_to_pill[-1])
+                # compute the length for scaling
+                distance = len(path_to_pill)
+                weight = np.exp(-distance/distance_decay)
+
+                # populate the step options dict
+                self.step_options[first_step]-=weight
+            
+#        if self.loop_counter > 20 and self.player.me.index == 0:
+#            import pdb; pdb.set_trace()
 
 
 
-    def compute_enemy_score(self, enemy_distance_decay=1.5):
+    def compute_enemy_score(self, enemy_distance_decay=2.3):
         """Update step_options to avoid the enemy. Currently only resets a
-        valus of the step_options to -1 if it means taking the shortest path to
+        values of the step_options to -1 if it means taking the shortest path to
         the enemy. 
         
         """
         decay_per_distance = lambda d: \
-                        -2*np.exp(-d**2/enemy_distance_decay**2)
+                    -3*np.exp(-d**2/enemy_distance_decay**2)
+
         self.repulse_bot(self.player.enemy_bots, decay_per_distance) 
 
     def repulse_bot(self, bot_list, function):
@@ -94,7 +114,7 @@ class ExtremelyHungryRole():
     def compute_friend_score(self):
         '''Based on the friend_bot, decay function '''
         d_decay = 5
-        max_repulsion = 1.1*self.step_options[max(self.step_options)]
+        max_repulsion = 0.01*self.step_options[max(self.step_options)]
         decay_function= lambda d: -max_repulsion*np.exp(-d**2 / d_decay**2)
         self.repulse_bot(self.player.other_team_bots, decay_function)
         
@@ -104,8 +124,14 @@ class ExtremelyHungryRole():
         score """
         # recommend the step with the highest score
         recommended_step = max(self.step_options, key=self.step_options.get)
+
+        # if we're in a loop: go to the second best move
+#        if self.loop_counter > 3:
+#            recommended_step = sorted(self.step_options,
+#                    key=self.step_options.get,
+#                    reverse=True)[1]
+
         self.move = recommended_step
-        self.past_moves.append(self.move)
         #self.move = diff_pos(self.current_pos, recommended_coordinate)
  
     def get_move(self, player):
@@ -118,8 +144,6 @@ class ExtremelyHungryRole():
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-        
-
             self.next_food = self.player.rnd.choice(self.player.enemy_food)
 
 
@@ -128,19 +152,22 @@ class ExtremelyHungryRole():
         # This is important, otherwise the bot will not consider all options
         for lm in self.player.legal_moves:
             self.step_options[lm] = 0
-
+        
+        self.detect_loop()
         self.compute_food_score()
         self.compute_enemy_score()
         self.compute_friend_score()
         self.compute_optimal_move()
-        if self.player.me.index == 0:
-            self.print_scores()
-       #import pdb; pdb.set_trace()
+
+        self.past_moves.append(self.player.current_pos)
+        #if self.player.me.index == 0:
+        #    self.print_scores()
+#        import pdb; pdb.set_trace()
         
         try:
            return self.move
         except NoPathException:
-            print("Help!")
+            #print("Help!")
             return datamodel.stop
  
 
@@ -161,6 +188,6 @@ class ExtremelyHungryRole():
         %3.2f   %3.2f    %3.2f
                 %3.2f""" % (u_coor, l_coor, c_coor, r_coor, d_coor)
 
-        print(print_str)
-        print("Direction: ", self.move)
+        #print(print_str)
+        #print("Direction: ", self.move)
 

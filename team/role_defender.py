@@ -39,15 +39,14 @@ class PossessiveItalianRole():
                 intercept = self.get_slay_enemy(index_enemy_to_block)
 
         else:
-            print('Sit!!')
             intercept = self.get_sit_on_food()
+            self.player.memory.store((self.player._index, 'sit'), True)
 
         try:
             next_pos = self.goto_pos(intercept)
             move = diff_pos(self.player.current_pos, next_pos)
             return move
         except NoPathException:
-            print("Help!")
             return datamodel.stop
 
 
