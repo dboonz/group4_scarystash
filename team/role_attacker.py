@@ -28,8 +28,8 @@ class ExtremelyHungryRole():
 
     def detect_loop(self):
         """ Detects if we have a loop, and writes out that we're in a loop """
-        if len(set(self.past_moves[-4:-1])) < 3:
-            if len(self.past_moves) > 3:
+        if len(set(self.past_moves[-10:-1])) < 8:
+            if len(self.past_moves) > 10:
                 self.loop_counter += 1
         else:
             self.loop_counter = 0
@@ -59,8 +59,23 @@ class ExtremelyHungryRole():
             self.step_options[first_step]+=weight
 
             i += 1
-        if self.loop_counter > 0:
+        if self.loop_counter > 3:
             print("Stuck in a loop for %d steps" % self.loop_counter)
+            distances_idx = np.argsort(distances)
+            try:
+                for i in range(min(self.loop_counter - 3, len(distances_idx))):
+                    path_to_pill = \
+                        self.player.adjacency.a_star(self.player.current_pos,
+                        self.player.enemy_food[distances_idx[i]])
+                    first_step = diff_pos(self.player.current_pos, path_to_pill[-1])
+                    # compute the length for scaling
+                    distance = len(path_to_pill)
+                    weight = np.exp(-distance/distance_decay)
+
+                    # populate the step options dict
+                    self.step_options[first_step]-=weight
+            except:
+                import pdb; pdb.set_trace()
 
 
 
@@ -108,6 +123,13 @@ class ExtremelyHungryRole():
         score """
         # recommend the step with the highest score
         recommended_step = max(self.step_options, key=self.step_options.get)
+
+        # if we're in a loop: go to the second best move
+#        if self.loop_counter > 3:
+#            recommended_step = sorted(self.step_options,
+#                    key=self.step_options.get,
+#                    reverse=True)[1]
+#
         self.move = recommended_step
         #self.move = diff_pos(self.current_pos, recommended_coordinate)
  

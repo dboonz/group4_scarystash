@@ -19,7 +19,8 @@ from .utils.helper import CollectiveMemory
 def factory():
     memory = CollectiveMemory()
     bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
-    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=PossessiveItalianRole(), defender=PossessiveItalianRole())
+    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
+#    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=PossessiveItalianRole(), defender=PossessiveItalianRole())
     #
     # bot1 = MemoryPlayer()
     # bot2 = MemoryPlayer()
@@ -28,6 +29,15 @@ def factory():
     # bot1 = DrunkPlayer()
     # bot2 = DrunkPlayer()
     return SimpleTeam("group4", bot1, bot2)
+
+
+def alternate_factory():
+
+    memory = CollectiveMemory()
+    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
+    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
+    return SimpleTeam("group4", bot1, bot2)
+
 
 # For testing purposes, one may use alternate factory methods::
 #
