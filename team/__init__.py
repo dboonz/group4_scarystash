@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from pelita.player import SimpleTeam
-from .role import ExtremelyHungryRole, PossessiveItalianRole
+from .role_attacker import ExtremelyHungryRole
+from .role_defender import PossessiveItalianRole
 from .awesome_player import AwesomePlayer
 from .utils.helper import CollectiveMemory
 #from .demo_player import DrunkPlayer
