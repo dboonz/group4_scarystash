@@ -4,6 +4,7 @@
 
 
 from pelita.player import AbstractPlayer
+from pelita.graph import AdjacencyList, NoPathException, diff_pos
 
 
 class AwesomePlayer(AbstractPlayer):
@@ -13,21 +14,16 @@ class AwesomePlayer(AbstractPlayer):
     def __init__(self, attacker, defender, walkie_talkie=None):
         '''
         '''
-
         self.memory = walkie_talkie
         self.attacker = attacker
         self.defender = defender
 
 
     def set_initial(self):
+        '''Sets the initial values.
         '''
-        '''
-        if self.attacker is not None:
-            self.attacker._set_index(self._index)
-            self.attacker._set_initial(self.universe_states[-1], self._current_state)
+        self.adjacency = AdjacencyList(self.current_uni.reachable([self.initial_pos]))
 
-         # if self.defender is not None:
-         #    self.defender.set_initial(self.current_uni)
 
     def get_role(self):
         '''Returns the role of the player.
@@ -42,15 +38,15 @@ class AwesomePlayer(AbstractPlayer):
     def get_move(self):
         '''Returns the next move to be made by the player.
         '''
-        print('GETTING MOVE', self._index)
+        # specify the role
         role = self.get_role()
-
         if role is 'attack':
-            move = self.attacker.get_move()
-            return move
-
+            self.say(self.attacker.talk)
+            move = self.attacker.get_move(player=self)
         elif role is 'defend':
-            return self.defender.get_move()
-
+            self.say(self.defender.talk)
+            move = self.defender.get_move(player=self)
         else:
             raise ValueError('Donnot know what to do with role={0}'.format(role))
+
+        return move

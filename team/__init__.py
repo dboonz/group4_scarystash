@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from pelita.player import SimpleTeam
-from .ExtremelyHungryPlayer import ExtremelyHungryPlayer
-from .demo_player import DrunkPlayer
+from .role import ExtremelyHungryRole
 from .awesome_player import AwesomePlayer
-#from .memoryPlayer import MemoryPlayer
 from .utils.helper import CollectiveMemory
+#from .demo_player import DrunkPlayer
+#from .memoryPlayer import MemoryPlayer
 
 # (please use relative imports inside your module)
 
@@ -17,8 +17,8 @@ from .utils.helper import CollectiveMemory
 
 def factory():
     memory = CollectiveMemory()
-    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryPlayer(), defender=None)
-    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryPlayer(), defender=None)
+    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=None)
+    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=None)
     #
     # bot1 = MemoryPlayer()
     # bot2 = MemoryPlayer()
