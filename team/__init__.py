@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 from pelita.player import SimpleTeam
-#from .demo_player import DrunkPlayer
+from .ExtremelyHungryPlayer import ExtremelyHungryPlayer
+from .demo_player import DrunkPlayer
 from .awesome_player import AwesomePlayer
 #from .memoryPlayer import MemoryPlayer
 from .utils.helper import CollectiveMemory
@@ -16,12 +17,15 @@ from .utils.helper import CollectiveMemory
 
 def factory():
     memory = CollectiveMemory()
-    bot1 = AwesomePlayer(walkie_talkie=memory)
-    bot2 = AwesomePlayer(walkie_talkie=memory)
+    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryPlayer(), defender=None)
+    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryPlayer(), defender=None)
+    #
     # bot1 = MemoryPlayer()
     # bot2 = MemoryPlayer()
     # print('Creating bots {b1} and {b2}'.format(b1 = bot1.__repr__, b2 = bot2.__repr__))
     # m = CollectiveMemory(bot1, bot2)
+    # bot1 = DrunkPlayer()
+    # bot2 = DrunkPlayer()
     return SimpleTeam("group4", bot1, bot2)
 
 # For testing purposes, one may use alternate factory methods::
