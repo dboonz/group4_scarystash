@@ -27,15 +27,9 @@ class PossessiveItalianRole():
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-
-        #self.get_enemy_to_block()
         index_enemy_to_block = self.get_enemy_to_block()
-        food, path = self.get_closest_food_to_enemy(index_enemy_to_block)
-        #self.get_closest_food()
-        #self.get_food_to_protect()
-        #self.get_enemy_path()
-        #self.get_point_to_intercept()
-        intercept = self.get_point_to_intercept(path)
+        path_en_to_all_food = self.get_closest_food_to_enemy(index_enemy_to_block)
+        intercept = self.get_point_to_intercept(path_en_to_all_food)
 
         try:
             next_pos = self.goto_pos(intercept)
@@ -54,7 +48,6 @@ class PossessiveItalianRole():
         dist_en0 = len(self.player.adjacency.a_star(my_pos, en_bots[0].current_pos))
         dist_en1 = len(self.player.adjacency.a_star(my_pos, en_bots[1].current_pos))
         return np.argmin([dist_en0, dist_en1])
-        #self.enemy_to_block = np.argmin([dist_enemy0, dist_enemy1])
 
     def get_closest_food_to_enemy(self, en_index):
         '''Return the closest food to the enemy.
@@ -64,35 +57,19 @@ class PossessiveItalianRole():
         # distance of enemy to all food
         distance = lambda x: self.player.adjacency.a_star(en_pos, x)
         path_en_to_food = list(map(distance, self.player.team_food))
-        dist_en_to_food = [len(path) for path in path_en_to_food]
-        # food to protect
-        index = np.argmin(dist_en_to_food)  #
-        food = self.player.team_food[index] #position of food in tuple
-        path = path_en_to_food[index]       #path from enemy to food in list of tuples
-        return food, path
+        path_en_to_all_food = np.sort(path_en_to_food)
+        return path_en_to_all_food
 
-    def get_point_to_intercept(self, path):
+    def get_point_to_intercept(self, path_en_to_all_food):
         '''Point to intercept
         '''
-        if len(path) > 0:
-            index = np.round(len(path) / 2).astype(int)
-            intercept = path[index]
-        else:
-            print("I AM HERE!!!!")
-            intercept = self.player.current_pos
+        path = path_en_to_all_food[0]
+        if len(path) == 0:
+            path = path_en_to_all_food[1]
+        # calculate the intercept of path
+        index = np.round(len(path) / 2).astype(int)
+        intercept = path[index]
         return intercept
-
-        # if len(self.enemy_path) > 0:
-        #     index = np.round(len(self.enemy_path)/2)
-        #     self.p_intercept = self.enemy_path[index.astype(int)]
-        # else:
-        #     while len(self.enemy_path) == 0:
-        #         self.enemy_next_food_distance_list = np.delete(self.enemy_next_food_distance_list, self.minimum_index)
-        #         self.get_food_to_protect()
-        #         self.get_enemy_path()
-        #         index = np.round(len(self.enemy_path)/2)
-        #         self.p_intercept = self.enemy_path[index.astype(int)]
-
 
     def goto_pos(self, pos):
         '''Return the maze coordinate of the 1st step toward pos'''
