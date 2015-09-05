@@ -21,7 +21,7 @@ class PossessiveItalianRole():
         '''
         '''
         self.player = player
-
+        self.player.say("DID %d" % self.player.me.index)
         if (self.next_food is None) or (self.next_food not in self.player.enemy_food):
             if not self.player.enemy_food:
                 # all food has been eaten? ok. i’ll stop

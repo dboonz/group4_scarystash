@@ -137,7 +137,7 @@ class ExtremelyHungryRole():
     def get_move(self, player):
         self.player = player
         # check, if food is still present
-        self.player.say("ID %d" % self.player.me.index)
+        self.player.say("AID %d" % self.player.me.index)
         if (self.next_food is None
                 or self.next_food not in self.player.enemy_food):
             if not self.player.enemy_food:
