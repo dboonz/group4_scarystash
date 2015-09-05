@@ -5,6 +5,9 @@ import pelita
 from pelita.graph import AdjacencyList, NoPathException, diff_pos
 from pelita.player import AbstractPlayer, SimpleTeam
 import numpy as np
+from collections import defaultdict
+from .utils.helper import add_pos
+
 
 
 class ExtremelyHungryPlayer(AbstractPlayer):
@@ -21,36 +24,119 @@ class ExtremelyHungryPlayer(AbstractPlayer):
 #            a.append(self.adjacency.a_star(
 #            
 #
+    def compute_food_score(self, distance_decay=1.5):
+        """ Compute: distance to every pill, first step for every pill. 
+            Out: dict of step options weighed by distance """
+         #initialise a dict of step options: {next_cell: weight_count}
 
+        # loop through the list of available pills
+        for p in self.enemy_food:
+            # compute the path to the next one
+            path_to_pill = self.adjacency.a_star(self.current_pos, p)
+            first_step = diff_pos(self.current_pos, path_to_pill[-1])
+            # compute the length for scaling
+            weight = np.exp(-len(path_to_pill)/distance_decay)
+
+            # populate the step options dict
+            self.step_options[first_step]+=weight
+
+    def compute_enemy_score(self, enemy_distance_decay=1.5):
+        """Update step_options to avoid the enemy. Currently only resets a
+        valus of the step_options to -1 if it means taking the shortest path to
+        the enemy. 
+
+        It would be better to try for all the new positions what the shortest
+        path difference would be. In this case, if there are two paths that
+        allow the bot to be eaten they would both be detected.
+        
+        """
+        x,y = self.current_pos 
+        l_coor = (x-1,y)
+        r_coor = (x+1,y)
+        u_coor = (x,y+1)
+        d_coor = (x,y-1)
+
+        possible_positions = [u_coor, l_coor, r_coor, d_coor]
+
+        
+        # better implementation: 
+        # get the possible positions
+        for lm in self.legal_moves:
+            # The position we would be in in this case "possible_position"
+            p_pos = add_pos(self.current_pos, lm)
+            for e in self.enemy_bots:
+                # compute the path to the next move
+                if e.noisy:
+                    continue
+                            # check if it is within two steps away
+                try:
+                    path_to_bot = self.adjacency.a_star(p_pos, e.current_pos)
+                except pelita.graph.NoPathException:
+                    path_to_bot = []
+#                if len(path_to_bot) < 3:
+                self.step_options[lm] -=\
+                        2*np.exp(-len(path_to_bot)**2/enemy_distance_decay**2)
+
+
+    def compute_optimal_move(self):
+        """ Compute the optimal move based on the coordinate with the highest
+        score """
+        # recommend the step with the highest score
+        recommended_step = max(self.step_options, key=self.step_options.get)
+        self.move = recommended_step
+        #self.move = diff_pos(self.current_pos, recommended_coordinate)
+            
     def get_move(self):
         # check, if food is still present
-        self.say("Hungry!")
+        self.say("ID %d" % self.me.index)
         if (self.next_food is None
                 or self.next_food not in self.enemy_food):
             if not self.enemy_food:
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
+        
 
             self.next_food = self.rnd.choice(self.enemy_food)
-        # make a list of the distances to delicious pills
 
-        self.next_food_distance_list = np.array(list(map(
-                lambda x: len(self.adjacency.a_star(self.current_pos, x)),
-                 self.enemy_food)))
 
-        minimum_index = np.argmin(self.next_food_distance_list)
-        # get the path to the next part of liqorice
-        # steps = self.adjacency.a_star(self.current_pos, self.enemy_food[minimum_index])
-        # print("Distance to first pill:",  self.next_food_distance_list)
-        self.next_food = self.enemy_food[minimum_index]
+        self.step_options = defaultdict(float)
+        # initialize the step options to zero for all valid moves.
+        # This is important, otherwise the bot will not consider all options
+        for lm in self.legal_moves:
+            self.step_options[lm] = 0
+
+        self.compute_food_score()
+        self.compute_enemy_score()
+        self.compute_optimal_move()
+        if self.me.index == 1:
+            self.print_scores()
+        #import pdb; pdb.set_trace()
+        
         try:
-            next_pos = self.goto_pos(self.next_food)
-            move = diff_pos(self.current_pos, next_pos)
-            return move
+           return self.move
         except NoPathException:
             print("Help!")
             return datamodel.stop
+    
+    def print_scores(self):
+        """ Print the energy landscape for the next part """
+        # compute the indices
+        x,y = self.current_pos 
+
+        l_coor = self.step_options[(-1,0)]
+        r_coor = self.step_options[(1,0)]
+        u_coor = self.step_options[(0,-1)]
+        d_coor = self.step_options[(0,1)]
+#        scores = map(self.step_options.get, (u_idx, l_idx, r_idx, d_idx))
+
+        print_str = """
+              %3.2f   
+        %3.2f       %3.2f
+              %3.2f""" % (u_coor, l_coor, r_coor, d_coor)
+
+        print(print_str)
+        print("Direction: ", self.move)
 
 def factory():
     return SimpleTeam("The Food Eating Players", FoodEatingPlayer(), FoodEatingPlayer())
