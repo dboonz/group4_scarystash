@@ -19,9 +19,20 @@ class ExtremelyHungryRole():
         self.talk = 'Hungry!'
         self.next_food = None
         self.player = None
+        self.past_moves = []
+        self.loop_counter = 0
 
     def goto_pos(self, pos):
         return self.player.adjacency.a_star(self.current_pos, pos)[-1]
+
+
+    def detect_loop(self):
+        """ Detects if we have a loop, and writes out that we're in a loop """
+        if len(set(self.past_moves[-3:-1])) < 3:
+            self.loop_counter += 1
+        else:
+            self.loop_counter = 0
+        return True
 
     def compute_food_score(self, distance_decay=2.5):
         """ Compute: distance to every pill, first step for every pill. 
@@ -29,15 +40,25 @@ class ExtremelyHungryRole():
          #initialise a dict of step options: {next_cell: weight_count}
 
         # loop through the list of available pills
+        distances = np.zeros(len(self.player.enemy_food))
+        i = 0
         for p in self.player.enemy_food:
             # compute the path to the next one
             path_to_pill = self.player.adjacency.a_star(self.player.current_pos, p)
             first_step = diff_pos(self.player.current_pos, path_to_pill[-1])
             # compute the length for scaling
-            weight = np.exp(-len(path_to_pill)/distance_decay)
+            distance = len(path_to_pill)
+            distances[i] = distance
+            weight = np.exp(-distance/distance_decay)
 
             # populate the step options dict
             self.step_options[first_step]+=weight
+
+            i += 1
+            if self.loop_counter > 0:
+                print("Stuck in a loop for %d steps" % self.loop_counter)
+
+
 
     def compute_enemy_score(self, enemy_distance_decay=1.5):
         """Update step_options to avoid the enemy. Currently only resets a
@@ -84,6 +105,7 @@ class ExtremelyHungryRole():
         # recommend the step with the highest score
         recommended_step = max(self.step_options, key=self.step_options.get)
         self.move = recommended_step
+        self.past_moves.append(self.move)
         #self.move = diff_pos(self.current_pos, recommended_coordinate)
  
     def get_move(self, player):
