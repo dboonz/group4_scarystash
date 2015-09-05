@@ -60,7 +60,7 @@ class ExtremelyHungryRole():
 
             i += 1
         if self.loop_counter > 3:
-            print("Stuck in a loop for %d steps" % self.loop_counter)
+            #print("Stuck in a loop for %d steps" % self.loop_counter)
             distances_idx = np.argsort(distances)
             for i in range(min(self.loop_counter - 10, len(distances_idx))):
                 path_to_pill = \
@@ -73,8 +73,9 @@ class ExtremelyHungryRole():
 
                 # populate the step options dict
                 self.step_options[first_step]-=weight
-        if self.loop_counter > 20 and self.player.me.index == 0:
-            import pdb; pdb.set_trace()
+            
+#        if self.loop_counter > 20 and self.player.me.index == 0:
+#            import pdb; pdb.set_trace()
 
 
 
@@ -84,8 +85,14 @@ class ExtremelyHungryRole():
         the enemy. 
         
         """
-        decay_per_distance = lambda d: \
-                        -2*np.exp(-d**2/enemy_distance_decay**2)
+        if self.player.me.is_destroyer:
+            # we're in the home field. Delicious enemies around
+            decay_per_distance = lambda d: \
+                        2*np.exp(-d**2/enemy_distance_decay**2)
+        else:
+            decay_per_distance = lambda d: \
+                        -5*np.exp(-d**2/enemy_distance_decay**2)
+
         self.repulse_bot(self.player.enemy_bots, decay_per_distance) 
 
     def repulse_bot(self, bot_list, function):
@@ -128,7 +135,7 @@ class ExtremelyHungryRole():
 #            recommended_step = sorted(self.step_options,
 #                    key=self.step_options.get,
 #                    reverse=True)[1]
-#
+
         self.move = recommended_step
         #self.move = diff_pos(self.current_pos, recommended_coordinate)
  

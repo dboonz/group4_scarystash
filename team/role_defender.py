@@ -28,7 +28,7 @@ class PossessiveItalianRole():
                 return datamodel.stop
 
         the_score = self.get_score_diff()
-        print(the_score)
+        #print(the_score)
 
         #import pdb
         #pdb.set_trace()
