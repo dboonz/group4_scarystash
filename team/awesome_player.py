@@ -4,35 +4,51 @@
 
 
 from pelita.player import AbstractPlayer
+from pelita.graph import AdjacencyList, NoPathException, diff_pos
 
 
-class AwesomePalyer(AbstractPlayer):
+class AwesomePlayer(AbstractPlayer):
     '''
     Player which makes awesome move decisions.
     '''
-    def __init__(self, walkie_talkie):
+    def __init__(self, attacker, defender, walkie_talkie=None):
         '''
         '''
-        self.wt = walkie_talkie
-        # self.attacker = Attacker()
-        # self.defender = Defender()
+        self.memory = walkie_talkie
+        self.attacker = attacker
+        self.defender = defender
+
+
+    def set_initial(self):
+        '''Sets the initial values.
+        '''
+        self.adjacency = AdjacencyList(self.current_uni.reachable([self.initial_pos]))
 
 
     def get_role(self):
         '''Returns the role of the player.
         '''
-        pass
+        if self.memory is None:
+            pass
+        else:
+            pass
+        return 'attack'
 
 
     def get_move(self):
         '''Returns the next move to be made by the player.
         '''
+        # specify the role
         role = self.get_role()
-        if role is 'attacke':
-            self.attacker.get_move()
+
+        if role is 'attack':
+            self.say(self.attacker.talk)
+            move = self.attacker.get_move(player=self)
 
         elif role is 'defend':
-            self.defender.get_move()
-
+            self.say(self.defender.talk)
+            move = self.defender.get_move(player=self)
         else:
             raise ValueError('Donnot know what to do with role={0}'.format(role))
+
+        return move

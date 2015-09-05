@@ -27,13 +27,15 @@ class ItalianPossessivePlayer(AbstractPlayer):
         self.enemy_to_block = np.argmin([dist_enemy0, dist_enemy1])
     
     # Determine closest food for that enemy
-    def get_food_to_protect(self):
-        enemy_next_food_distance_list = np.array(list(map(
+    def get_closest_food(self):
+        self.enemy_next_food_distance_list = np.array(list(map(
                 lambda x: len(self.adjacency.a_star(self.enemy_bots[self.enemy_to_block].current_pos, x)),
                  self.team_food)))
-        minimum_index = np.argmin(enemy_next_food_distance_list)
-        
-        self.food_to_protect = self.team_food[minimum_index]
+    
+    # Decide which food to protect
+    def get_food_to_protect(self):
+        self.minimum_index = np.argmin(self.enemy_next_food_distance_list)
+        self.food_to_protect = self.team_food[self.minimum_index]
 
     # Enemy path
     def get_enemy_path(self):
@@ -41,16 +43,19 @@ class ItalianPossessivePlayer(AbstractPlayer):
 
     # Point to intercept
     def get_point_to_intercept(self):
-        index = np.round(len(self.enemy_path)/2)
-        if index > 0:
+        if len(self.enemy_path) > 0:
+            index = np.round(len(self.enemy_path)/2)
             self.p_intercept = self.enemy_path[index.astype(int)]
         else:
-            print("Enemy eats")
-            self.get_enemy_to_block()
-            self.get_food_to_protect()
-            self.get_enemy_path()
-            print(self.enemy_path)
-            self.p_intercept = self.enemy_path[index.astype(int)]
+            while len(self.enemy_path) == 0:
+                self.enemy_next_food_distance_list = np.delete(self.enemy_next_food_distance_list, self.minimum_index)
+                self.get_food_to_protect()
+                self.get_enemy_path()
+                index = np.round(len(self.enemy_path)/2)
+                self.p_intercept = self.enemy_path[index.astype(int)]
+
+    #def sit_on_food(self):
+        
 
     def get_move(self):
         # check, if food is still present
@@ -62,6 +67,7 @@ class ItalianPossessivePlayer(AbstractPlayer):
                 return datamodel.stop
 
         self.get_enemy_to_block()
+        self.get_closest_food()
         self.get_food_to_protect()
         self.get_enemy_path()
         self.get_point_to_intercept()
