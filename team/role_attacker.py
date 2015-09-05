@@ -28,10 +28,14 @@ class ExtremelyHungryRole():
 
     def detect_loop(self):
         """ Detects if we have a loop, and writes out that we're in a loop """
-        if len(set(self.past_moves[-3:-1])) < 3:
-            self.loop_counter += 1
+        if len(set(self.past_moves[-4:-1])) < 3:
+            if len(self.past_moves) > 3:
+                self.loop_counter += 1
         else:
             self.loop_counter = 0
+
+#        if self.player.me.index == 1:
+#            import pdb; pdb.set_trace()
         return True
 
     def compute_food_score(self, distance_decay=2.5):
@@ -55,8 +59,8 @@ class ExtremelyHungryRole():
             self.step_options[first_step]+=weight
 
             i += 1
-            if self.loop_counter > 0:
-                print("Stuck in a loop for %d steps" % self.loop_counter)
+        if self.loop_counter > 0:
+            print("Stuck in a loop for %d steps" % self.loop_counter)
 
 
 
@@ -105,7 +109,6 @@ class ExtremelyHungryRole():
         # recommend the step with the highest score
         recommended_step = max(self.step_options, key=self.step_options.get)
         self.move = recommended_step
-        self.past_moves.append(self.move)
         #self.move = diff_pos(self.current_pos, recommended_coordinate)
  
     def get_move(self, player):
@@ -118,8 +121,6 @@ class ExtremelyHungryRole():
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-        
-
             self.next_food = self.player.rnd.choice(self.player.enemy_food)
 
 
@@ -128,13 +129,16 @@ class ExtremelyHungryRole():
         # This is important, otherwise the bot will not consider all options
         for lm in self.player.legal_moves:
             self.step_options[lm] = 0
-
+        
+        self.detect_loop()
         self.compute_food_score()
         self.compute_enemy_score()
         self.compute_friend_score()
         self.compute_optimal_move()
-        if self.player.me.index == 0:
-            self.print_scores()
+
+        self.past_moves.append(self.player.current_pos)
+        #if self.player.me.index == 0:
+        #    self.print_scores()
        #import pdb; pdb.set_trace()
         
         try:
