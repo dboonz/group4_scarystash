@@ -27,9 +27,21 @@ class PossessiveItalianRole():
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-        index_enemy_to_block = self.get_enemy_to_block()
-        path_en_to_all_food = self.get_closest_food_to_enemy(index_enemy_to_block)
-        intercept = self.get_point_to_intercept(path_en_to_all_food)
+        the_score = self.get_score_diff()
+        print(the_score)
+
+        #import pdb
+        #pdb.set_trace()
+        if len(self.player.team_food) > 4:
+            index_enemy_to_block = self.get_enemy_to_block()
+            path_en_to_all_food = self.get_closest_food_to_enemy(index_enemy_to_block)
+            intercept = self.get_point_to_intercept(path_en_to_all_food)
+
+            if len(self.player.adjacency.a_star(self.player.enemy_bots[index_enemy_to_block].current_pos, self.player.current_pos)) < 3 and self.player.me.is_destroyer:
+                intercept = self.get_slay_enemy(index_enemy_to_block)
+
+        else:
+            intercept = self.get_sit_on_food()
 
         try:
             next_pos = self.goto_pos(intercept)
@@ -56,8 +68,9 @@ class PossessiveItalianRole():
         en_pos = self.player.enemy_bots[en_index].current_pos
         # distance of enemy to all food
         distance = lambda x: self.player.adjacency.a_star(en_pos, x)
-        path_en_to_food = list(map(distance, self.player.team_food))
-        path_en_to_all_food = np.sort(path_en_to_food)
+        path_en_to_food = np.array(list(map(distance, self.player.team_food)))
+        indices = np.argsort([len(x) for x in path_en_to_food])
+        path_en_to_all_food = path_en_to_food[indices]
         return path_en_to_all_food
 
     def get_point_to_intercept(self, path_en_to_all_food):
@@ -69,7 +82,30 @@ class PossessiveItalianRole():
         # calculate the intercept of path
         index = np.round(len(path) / 2).astype(int)
         intercept = path[index]
+        #print(intercept)
         return intercept
+
+    ''' Which food to sit on '''
+    def get_sit_on_food(self):
+        self.player.team_food_distance_list = np.array(list(map(
+                lambda x: len(self.player.adjacency.a_star(self.player.current_pos, x)),
+                 self.player.team_food)))
+
+        minimum_index = np.argmin(self.player.team_food_distance_list)
+        intercept = self.player.team_food[minimum_index]
+        return intercept
+
+    ''' Slay the enemy!!'''
+    def get_slay_enemy(self, index_enemy_to_block):
+        intercept = self.player.enemy_bots[index_enemy_to_block].current_pos
+        return intercept
+
+    ''' Ge the sore'''
+    def get_score_diff(self):
+        #team_ind = 
+        the_score = np.array(self.player.current_state['food_count']) + (np.array(self.player.current_state['times_killed']) * 5)
+        #score_diff = 
+        return the_score
 
     def goto_pos(self, pos):
         '''Return the maze coordinate of the 1st step toward pos'''
