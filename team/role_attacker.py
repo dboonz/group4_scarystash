@@ -62,7 +62,7 @@ class ExtremelyHungryRole():
         if self.loop_counter > 3:
             #print("Stuck in a loop for %d steps" % self.loop_counter)
             distances_idx = np.argsort(distances)
-            for i in range(min(self.loop_counter - 10, len(distances_idx))):
+            for i in range(min(int((self.loop_counter - 10)/3), len(distances_idx))):
                 path_to_pill = \
                     self.player.adjacency.a_star(self.player.current_pos,
                     self.player.enemy_food[distances_idx[i]])
@@ -79,19 +79,14 @@ class ExtremelyHungryRole():
 
 
 
-    def compute_enemy_score(self, enemy_distance_decay=2.5):
+    def compute_enemy_score(self, enemy_distance_decay=2.3):
         """Update step_options to avoid the enemy. Currently only resets a
         values of the step_options to -1 if it means taking the shortest path to
         the enemy. 
         
         """
-        if self.player.me.is_destroyer:
-            # we're in the home field. Delicious enemies around
-            decay_per_distance = lambda d: \
-                        2*np.exp(-d**2/enemy_distance_decay**2)
-        else:
-            decay_per_distance = lambda d: \
-                        -5*np.exp(-d**2/enemy_distance_decay**2)
+        decay_per_distance = lambda d: \
+                    -3*np.exp(-d**2/enemy_distance_decay**2)
 
         self.repulse_bot(self.player.enemy_bots, decay_per_distance) 
 
@@ -119,7 +114,7 @@ class ExtremelyHungryRole():
     def compute_friend_score(self):
         '''Based on the friend_bot, decay function '''
         d_decay = 5
-        max_repulsion = 0*self.step_options[max(self.step_options)]
+        max_repulsion = 0.01*self.step_options[max(self.step_options)]
         decay_function= lambda d: -max_repulsion*np.exp(-d**2 / d_decay**2)
         self.repulse_bot(self.player.other_team_bots, decay_function)
         
@@ -167,12 +162,12 @@ class ExtremelyHungryRole():
         self.past_moves.append(self.player.current_pos)
         #if self.player.me.index == 0:
         #    self.print_scores()
-       #import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
         
         try:
            return self.move
         except NoPathException:
-            print("Help!")
+            #print("Help!")
             return datamodel.stop
  
 
@@ -193,6 +188,6 @@ class ExtremelyHungryRole():
         %3.2f   %3.2f    %3.2f
                 %3.2f""" % (u_coor, l_coor, c_coor, r_coor, d_coor)
 
-        print(print_str)
-        print("Direction: ", self.move)
+        #print(print_str)
+        #print("Direction: ", self.move)
 
