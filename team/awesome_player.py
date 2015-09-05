@@ -20,16 +20,20 @@ class AwesomePlayer(AbstractPlayer):
         self.round = 0
         self.was_home = True
         self.roles = []
+        self.sit = False
 
     def set_initial(self):
         '''Sets the initial values.
         '''
         self.adjacency = AdjacencyList(self.current_uni.reachable([self.initial_pos]))
         self.memory.store((self._index, 'roles'), self.roles)
+        self.memory.store((self._index, 'sit'), self.sit)
 
     def get_role(self):
         '''Returns the role of the player.
         '''
+        other_player = self.other_team_bots[0].index
+
         if self.round == 0:
             return 'attack'
 
@@ -43,13 +47,20 @@ class AwesomePlayer(AbstractPlayer):
                 if self.memory.retrieve((other_player, 'roles'))[-1] == 'defend':
                     return 'attack'
                 else:
-                    return 'defend'
+                    diff_score = self.team.score - self.enemy_team.score
+                    if diff_score > len(self.team_food) - 7:
+                        return 'defend'
+                    else:
+                        return 'attack'
             else:
                 return 'attack'
 
-        diff_score = self.team.score - self.enemy_team.score
-        if diff_score > len(self.team_food) - 5:
+        elif self.memory.retrieve((other_player, 'sit')) == True:
             return 'defend'
+
+        # diff_score = self.team.score - self.enemy_team.score
+        # if diff_score > len(self.team_food) - 7:
+        #     return 'defend'
 
         # elif self.roles[-1] == 'attack':
         #     diff_score = self.team.score - self.enemy_team.score
