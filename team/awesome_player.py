@@ -40,9 +40,11 @@ class AwesomePlayer(AbstractPlayer):
         '''
         # specify the role
         role = self.get_role()
+
         if role is 'attack':
             self.say(self.attacker.talk)
             move = self.attacker.get_move(player=self)
+
         elif role is 'defend':
             self.say(self.defender.talk)
             move = self.defender.get_move(player=self)
