@@ -18,8 +18,8 @@ from .utils.helper import CollectiveMemory
 
 def factory():
     memory = CollectiveMemory()
-    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
-    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=ExtremelyHungryRole())
+    bot1 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=PossessiveItalianRole())
+    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=ExtremelyHungryRole(), defender=PossessiveItalianRole())
 #    bot2 = AwesomePlayer(walkie_talkie=memory, attacker=PossessiveItalianRole(), defender=PossessiveItalianRole())
     #
     # bot1 = MemoryPlayer()
