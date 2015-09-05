@@ -28,8 +28,8 @@ class ExtremelyHungryRole():
 
     def detect_loop(self):
         """ Detects if we have a loop, and writes out that we're in a loop """
-        if len(set(self.past_moves[-10:-1])) < 8:
-            if len(self.past_moves) > 10:
+        if len(set(self.past_moves[-20:-1])) < 10:
+            if len(self.past_moves) > 18:
                 self.loop_counter += 1
         else:
             self.loop_counter = 0
@@ -62,26 +62,25 @@ class ExtremelyHungryRole():
         if self.loop_counter > 3:
             print("Stuck in a loop for %d steps" % self.loop_counter)
             distances_idx = np.argsort(distances)
-            try:
-                for i in range(min(self.loop_counter - 3, len(distances_idx))):
-                    path_to_pill = \
-                        self.player.adjacency.a_star(self.player.current_pos,
-                        self.player.enemy_food[distances_idx[i]])
-                    first_step = diff_pos(self.player.current_pos, path_to_pill[-1])
-                    # compute the length for scaling
-                    distance = len(path_to_pill)
-                    weight = np.exp(-distance/distance_decay)
+            for i in range(min(self.loop_counter - 10, len(distances_idx))):
+                path_to_pill = \
+                    self.player.adjacency.a_star(self.player.current_pos,
+                    self.player.enemy_food[distances_idx[i]])
+                first_step = diff_pos(self.player.current_pos, path_to_pill[-1])
+                # compute the length for scaling
+                distance = len(path_to_pill)
+                weight = np.exp(-distance/distance_decay)
 
-                    # populate the step options dict
-                    self.step_options[first_step]-=weight
-            except:
-                import pdb; pdb.set_trace()
-
+                # populate the step options dict
+                self.step_options[first_step]-=weight
+        if self.loop_counter > 20 and self.player.me.index == 0:
+            import pdb; pdb.set_trace()
 
 
-    def compute_enemy_score(self, enemy_distance_decay=1.5):
+
+    def compute_enemy_score(self, enemy_distance_decay=2.5):
         """Update step_options to avoid the enemy. Currently only resets a
-        valus of the step_options to -1 if it means taking the shortest path to
+        values of the step_options to -1 if it means taking the shortest path to
         the enemy. 
         
         """
@@ -113,7 +112,7 @@ class ExtremelyHungryRole():
     def compute_friend_score(self):
         '''Based on the friend_bot, decay function '''
         d_decay = 5
-        max_repulsion = 1.1*self.step_options[max(self.step_options)]
+        max_repulsion = 0*self.step_options[max(self.step_options)]
         decay_function= lambda d: -max_repulsion*np.exp(-d**2 / d_decay**2)
         self.repulse_bot(self.player.other_team_bots, decay_function)
         
