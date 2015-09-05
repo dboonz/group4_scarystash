@@ -20,6 +20,8 @@ class AwesomePlayer(AbstractPlayer):
         self.round = 0
         self.was_home = True
         self.roles = []
+        # True, if any of the enemy bits are harvesters in this round
+        self.enemies_attacking = []
 
     def set_initial(self):
         '''Sets the initial values.
@@ -47,6 +49,10 @@ class AwesomePlayer(AbstractPlayer):
             else:
                 return 'attack'
 
+        # if a bot was defender for 5 rounds and there was no harvester bot during that time, attack again
+        if self.round > 0 and self.roles[-6:-1] == 'defend' and not np.any(self.enemies_attacking[-6:-1]):
+            return 'attack'
+
         diff_score = self.team.score - self.enemy_team.score
         if diff_score > len(self.team_food) - 5:
             return 'defend'
@@ -71,6 +77,7 @@ class AwesomePlayer(AbstractPlayer):
         # specify the role
         role = self.get_role()
         self.roles.append(role)
+        self.enemies_attacking.append(any([bot.is_harvester for bot in self.enemy_bots]))
 
         if role is 'attack':
             self.say(self.attacker.talk)
