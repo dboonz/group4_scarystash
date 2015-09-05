@@ -28,7 +28,7 @@ class PossessiveItalianRole():
                 return datamodel.stop
 
         score_diff = self.player.team.score - self.player.enemy_team.score
-        sit_criterion = score_diff > len(self.player.team_food)-2 
+        sit_criterion = score_diff > len(self.player.team_food) - 1
 
         if not sit_criterion:
             index_enemy_to_block = self.get_enemy_to_block()
