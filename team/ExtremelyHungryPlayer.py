@@ -17,14 +17,8 @@ class ExtremelyHungryPlayer(AbstractPlayer):
 
     def goto_pos(self, pos):
         return self.adjacency.a_star(self.current_pos, pos)[-1]
-#
-#    def compute_distance_to_list(_list):
-#        a = []
-#        for item in _list:
-#            a.append(self.adjacency.a_star(
-#            
-#
-    def compute_food_score(self, distance_decay=1.5):
+
+    def compute_food_score(self, distance_decay=2.5):
         """ Compute: distance to every pill, first step for every pill. 
             Out: dict of step options weighed by distance """
          #initialise a dict of step options: {next_cell: weight_count}
@@ -44,38 +38,42 @@ class ExtremelyHungryPlayer(AbstractPlayer):
         """Update step_options to avoid the enemy. Currently only resets a
         valus of the step_options to -1 if it means taking the shortest path to
         the enemy. 
-
-        It would be better to try for all the new positions what the shortest
-        path difference would be. In this case, if there are two paths that
-        allow the bot to be eaten they would both be detected.
         
         """
-        x,y = self.current_pos 
-        l_coor = (x-1,y)
-        r_coor = (x+1,y)
-        u_coor = (x,y+1)
-        d_coor = (x,y-1)
+        decay_per_distance = lambda d: \
+                        -2*np.exp(-d**2/enemy_distance_decay**2)
+        self.repulse_bot(self.enemy_bots, decay_per_distance) 
 
-        possible_positions = [u_coor, l_coor, r_coor, d_coor]
 
-        
-        # better implementation: 
+    def repulse_bot(self, bot_list, function):
+        '''In: list of bots to repulse, repulsion function 
+        '''
         # get the possible positions
         for lm in self.legal_moves:
             # The position we would be in in this case "possible_position"
             p_pos = add_pos(self.current_pos, lm)
-            for e in self.enemy_bots:
+            for e in bot_list:
                 # compute the path to the next move
-                if e.noisy:
-                    continue
-                            # check if it is within two steps away
+                try:
+                    if e.noisy:
+                        continue
+                except AttributeError:
+                    pass
                 try:
                     path_to_bot = self.adjacency.a_star(p_pos, e.current_pos)
                 except pelita.graph.NoPathException:
                     path_to_bot = []
-#                if len(path_to_bot) < 3:
-                self.step_options[lm] -=\
-                        2*np.exp(-len(path_to_bot)**2/enemy_distance_decay**2)
+                distance = len(path_to_bot)
+                self.step_options[lm] += function(distance)
+
+
+    def compute_friend_score(self):
+        '''Based on the friend_bot, decay function '''
+        d_decay = 5
+        max_repulsion = 1.1*self.step_options[max(self.step_options)]
+        decay_function= lambda d: -max_repulsion*np.exp(-d**2 / d_decay**2)
+        self.repulse_bot(self.other_team_bots, decay_function)
+        
 
 
     def compute_optimal_move(self):
@@ -108,10 +106,11 @@ class ExtremelyHungryPlayer(AbstractPlayer):
 
         self.compute_food_score()
         self.compute_enemy_score()
+        self.compute_friend_score()
         self.compute_optimal_move()
-        if self.me.index == 1:
+        if self.me.index == 0:
             self.print_scores()
-        #import pdb; pdb.set_trace()
+       #import pdb; pdb.set_trace()
         
         try:
            return self.move
@@ -128,12 +127,13 @@ class ExtremelyHungryPlayer(AbstractPlayer):
         r_coor = self.step_options[(1,0)]
         u_coor = self.step_options[(0,-1)]
         d_coor = self.step_options[(0,1)]
+        c_coor = self.step_options[(0,0)]
 #        scores = map(self.step_options.get, (u_idx, l_idx, r_idx, d_idx))
 
         print_str = """
-              %3.2f   
-        %3.2f       %3.2f
-              %3.2f""" % (u_coor, l_coor, r_coor, d_coor)
+                %3.2f   
+        %3.2f   %3.2f    %3.2f
+                %3.2f""" % (u_coor, l_coor, c_coor, r_coor, d_coor)
 
         print(print_str)
         print("Direction: ", self.move)
