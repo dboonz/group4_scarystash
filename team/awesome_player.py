@@ -2,7 +2,7 @@
 
 # (Specifying utf-8 is always a good idea in Python 2.)
 
-
+import numpy as np
 from pelita.player import AbstractPlayer
 from pelita.graph import AdjacencyList, NoPathException, diff_pos
 
@@ -17,21 +17,51 @@ class AwesomePlayer(AbstractPlayer):
         self.memory = walkie_talkie
         self.attacker = attacker
         self.defender = defender
-
+        self.round = 0
+        self.was_home = True
+        self.roles = []
 
     def set_initial(self):
         '''Sets the initial values.
         '''
         self.adjacency = AdjacencyList(self.current_uni.reachable([self.initial_pos]))
-
+        self.memory.store((self._index, 'roles'), self.roles)
 
     def get_role(self):
         '''Returns the role of the player.
         '''
-        if self.memory is None:
-            pass
-        else:
-            pass
+        if self.round == 0:
+            return 'attack'
+
+        elif (not self.was_home) and (self.initial_pos == self.current_pos):
+            # You are born at home again
+            enemy_pos = np.array([bot.current_pos[1] for bot in self.enemy_bots])
+            # If there is any enemy in your field
+            if any([bot.is_harvester for bot in self.enemy_bots]):
+                other_player = self.other_team_bots[0].index
+                # check whether the teammate is defending or attacking
+                if self.memory.retrieve((other_player, 'roles'))[-1] == 'defend':
+                    return 'attack'
+                else:
+                    return 'defend'
+            else:
+                return 'attack'
+
+        diff_score = self.team.score - self.enemy_team.score
+        if diff_score > len(self.team_food) - 5:
+            return 'defend'
+
+        # elif self.roles[-1] == 'attack':
+        #     diff_score = self.team.score - self.enemy_team.score
+        #     if diff_score > 0:
+        #         return 'attack'
+        #     else:
+        #         self.team_food
+        # elif self.roles[-1] == 'defend':
+        #     if self.team.score > self.enemy.score:
+        #         return 'defend'
+        #     else:
+
         return 'attack'
 
 
@@ -40,6 +70,7 @@ class AwesomePlayer(AbstractPlayer):
         '''
         # specify the role
         role = self.get_role()
+        self.roles.append(role)
 
         if role is 'attack':
             self.say(self.attacker.talk)
@@ -48,7 +79,11 @@ class AwesomePlayer(AbstractPlayer):
         elif role is 'defend':
             self.say(self.defender.talk)
             move = self.defender.get_move(player=self)
+
         else:
             raise ValueError('Donnot know what to do with role={0}'.format(role))
 
+        self.round += 1
+        # Are you in home or field?
+        self.was_home = self.me.is_destroyer
         return move

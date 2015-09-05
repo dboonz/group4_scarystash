@@ -27,20 +27,19 @@ class PossessiveItalianRole():
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-        the_score = self.get_score_diff()
-        #print(the_score)
+        score_diff = self.player.team.score - self.player.enemy_team.score
+        sit_criterion = score_diff > len(self.player.team_food) - 1
 
-        #import pdb
-        #pdb.set_trace()
-        if len(self.player.team_food) > 4:
+        if not sit_criterion:
             index_enemy_to_block = self.get_enemy_to_block()
             path_en_to_all_food = self.get_closest_food_to_enemy(index_enemy_to_block)
             intercept = self.get_point_to_intercept(path_en_to_all_food)
 
-            if len(self.player.adjacency.a_star(self.player.enemy_bots[index_enemy_to_block].current_pos, self.player.current_pos)) < 3 and self.player.me.is_destroyer:
+            if len(self.player.adjacency.a_star(self.player.enemy_bots[index_enemy_to_block].current_pos, self.player.current_pos)) < 3 and self.player.me.is_destroyer and not self.player.enemy_bots[index_enemy_to_block].is_destroyer:
                 intercept = self.get_slay_enemy(index_enemy_to_block)
 
         else:
+            print('Sit!!')
             intercept = self.get_sit_on_food()
 
         try:
@@ -99,13 +98,6 @@ class PossessiveItalianRole():
     def get_slay_enemy(self, index_enemy_to_block):
         intercept = self.player.enemy_bots[index_enemy_to_block].current_pos
         return intercept
-
-    ''' Ge the sore'''
-    def get_score_diff(self):
-        #team_ind = 
-        the_score = np.array(self.player.current_state['food_count']) + (np.array(self.player.current_state['times_killed']) * 5)
-        #score_diff = 
-        return the_score
 
     def goto_pos(self, pos):
         '''Return the maze coordinate of the 1st step toward pos'''
