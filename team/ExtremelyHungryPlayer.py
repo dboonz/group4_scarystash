@@ -6,6 +6,7 @@ from pelita.graph import AdjacencyList, NoPathException, diff_pos
 from pelita.player import AbstractPlayer, SimpleTeam
 import numpy as np
 from collections import defaultdict
+from .utils.helper import add_pos
 
 
 
@@ -57,37 +58,26 @@ class ExtremelyHungryPlayer(AbstractPlayer):
 
         possible_positions = [u_coor, l_coor, r_coor, d_coor]
 
-        for e in self.enemy_bots:
-            # compute the path to the next move
-            if e.noisy:
-                continue
-                        # check if it is within two steps away
-            try:
-                path_to_bot = self.adjacency.a_star(self.current_pos, e.current_pos)
-            except pelita.graph.NoPathException:
-                path_to_bot = []
-            if len(path_to_bot) < 3:
-                first_step = diff_pos(self.current_pos, path_to_bot[-1])
-                self.step_options[first_step] = -1
-        #if self.me.index == 1:
-        #    import pdb; pdb.set_trace()
+        
+        # better implementation: 
+        # get the possible positions
+        for lm in self.legal_moves:
+            # The position we would be in in this case "possible_position"
+            p_pos = add_pos(self.current_pos, lm)
+            for e in self.enemy_bots:
+                # compute the path to the next move
+                if e.noisy:
+                    continue
+                            # check if it is within two steps away
+                try:
+                    path_to_bot = self.adjacency.a_star(p_pos, e.current_pos)
+                except pelita.graph.NoPathException:
+                    path_to_bot = []
+#                if len(path_to_bot) < 3:
+                self.step_options[lm] -=\
+                        2*np.exp(-len(path_to_bot)**2/enemy_distance_decay**2)
 
 
-
-
-
-#            for p1 in possible_positions:
-##                import pdb; pdb.set_trace()
-#                try:
-#                    path_to_bot = self.adjacency.a_star(p1, e.current_pos)
-#                except NoPathException:
-#                    path_to_bot = []
-#
-#
-#                weight = -2*np.exp(-len(path_to_bot)**2/
-#                        enemy_distance_decay**2)
-#                self.step_options[p1] += weight
-#
     def compute_optimal_move(self):
         """ Compute the optimal move based on the coordinate with the highest
         score """
@@ -119,8 +109,9 @@ class ExtremelyHungryPlayer(AbstractPlayer):
         self.compute_food_score()
         self.compute_enemy_score()
         self.compute_optimal_move()
-        self.print_scores()
-
+        if self.me.index == 1:
+            self.print_scores()
+        #import pdb; pdb.set_trace()
         
         try:
            return self.move
@@ -135,8 +126,8 @@ class ExtremelyHungryPlayer(AbstractPlayer):
 
         l_coor = self.step_options[(-1,0)]
         r_coor = self.step_options[(1,0)]
-        u_coor = self.step_options[(0,1)]
-        d_coor = self.step_options[(0,-1)]
+        u_coor = self.step_options[(0,-1)]
+        d_coor = self.step_options[(0,1)]
 #        scores = map(self.step_options.get, (u_idx, l_idx, r_idx, d_idx))
 
         print_str = """
