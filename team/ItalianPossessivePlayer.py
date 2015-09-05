@@ -51,11 +51,21 @@ class ItalianPossessivePlayer(AbstractPlayer):
                 self.enemy_next_food_distance_list = np.delete(self.enemy_next_food_distance_list, self.minimum_index)
                 self.get_food_to_protect()
                 self.get_enemy_path()
-                index = np.round(len(self.enemy_path)/2)
-                self.p_intercept = self.enemy_path[index.astype(int)]
+            index = np.round(len(self.enemy_path)/2)
+            self.p_intercept = self.enemy_path[index.astype(int)]
 
-    #def sit_on_food(self):
+    # Which food to sit on
+    def get_sit_on_food(self):
+        self.team_food_distance_list = np.array(list(map(
+                lambda x: len(self.adjacency.a_star(self.current_pos, x)),
+                 self.team_food)))
+
+        minimum_index = np.argmin(self.team_food_distance_list)
+        self.p_intercept = self.team_food[minimum_index]
         
+    def get_slay_enemy(self):
+        self.p_intercept = self.enemy_bots[self.enemy_to_block].current_pos
+
 
     def get_move(self):
         # check, if food is still present
@@ -66,11 +76,19 @@ class ItalianPossessivePlayer(AbstractPlayer):
                 # all food has been eaten? ok. i’ll stop
                 return datamodel.stop
 
-        self.get_enemy_to_block()
-        self.get_closest_food()
-        self.get_food_to_protect()
-        self.get_enemy_path()
-        self.get_point_to_intercept()
+        if len(self.team_food) > 5:
+            self.get_enemy_to_block()
+            self.get_closest_food()
+            self.get_food_to_protect()
+            self.get_enemy_path()
+            self.get_point_to_intercept()
+        
+            if len(self.adjacency.a_star(self.enemy_bots[self.enemy_to_block].current_pos, self.current_pos)) < 3:
+                self.get_slay_enemy()
+        
+        else:
+            self.get_sit_on_food()
+        
 
         try:
             next_pos = self.goto_pos(self.p_intercept)
