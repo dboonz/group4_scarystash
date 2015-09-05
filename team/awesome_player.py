@@ -35,6 +35,7 @@ class AwesomePlayer(AbstractPlayer):
         '''Returns the role of the player.
         '''
         other_player = self.other_team_bots[0].index
+        diff_score = self.team.score - self.enemy_team.score
 
         if self.round == 0:
             return 'attack'
@@ -58,10 +59,9 @@ class AwesomePlayer(AbstractPlayer):
                 return 'attack'
 
         # if a bot was defender for 5 rounds and there was no harvester bot during that time, attack again
-        if self.round > 0 and self.roles[-6:-1] == 'defend' and not np.any(self.enemies_attacking[-6:-1]):
-            return 'attack'
+        # if self.round > 0 and self.roles[-6:-1] == 'defend' and not np.any(self.enemies_attacking[-6:-1]):
+        #     return 'attack'
 
-        diff_score = self.team.score - self.enemy_team.score
 
         if self.memory.retrieve((other_player, 'sit')) == True:
             return 'defend'
